@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14460.31" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zJD-wX-O2b">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14460.20"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <scenes>
+        <!--View Controller-->
+        <scene sceneID="tne-QT-ifu">
+            <objects>
+                <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="PGClustering" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <gestureRecognizers/>
+                        <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
+                        <connections>
+                            <outletCollection property="gestureRecognizers" destination="t29-Tu-zmw" appends="YES" id="TIY-b8-lAQ"/>
+                        </connections>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
+                <tapGestureRecognizer id="t29-Tu-zmw">
+                    <connections>
+                        <action selector="tapGesture:" destination="BYZ-38-t0r" id="Gau-Cv-Rto"/>
+                    </connections>
+                </tapGestureRecognizer>
+            </objects>
+            <point key="canvasLocation" x="-90" y="-55"/>
+        </scene>
+        <!--MapVC-->
+        <scene sceneID="yW4-pL-gdh">
+            <objects>
+                <viewController id="zJD-wX-O2b" customClass="MapVC" customModule="PGClustering" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="ORB-rn-ek6">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="Xus-F6-XDl">
+                                <rect key="frame" x="0.0" y="20" width="375" height="647"/>
+                            </mapView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <constraints>
+                            <constraint firstItem="smq-ay-KYJ" firstAttribute="bottom" secondItem="Xus-F6-XDl" secondAttribute="bottom" id="5Uc-KS-eT9"/>
+                            <constraint firstItem="Xus-F6-XDl" firstAttribute="top" secondItem="smq-ay-KYJ" secondAttribute="top" id="Awa-hj-Sxh"/>
+                            <constraint firstItem="Xus-F6-XDl" firstAttribute="leading" secondItem="smq-ay-KYJ" secondAttribute="leading" id="DGB-Cv-XS6"/>
+                            <constraint firstItem="smq-ay-KYJ" firstAttribute="trailing" secondItem="Xus-F6-XDl" secondAttribute="trailing" id="up3-vx-X4C"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="smq-ay-KYJ"/>
+                    </view>
+                    <connections>
+                        <outlet property="mapView" destination="Xus-F6-XDl" id="yLI-Mj-8JA"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="4jm-gc-grl" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="844" y="-63"/>
+        </scene>
+    </scenes>
+</document>
