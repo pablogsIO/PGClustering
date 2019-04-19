@@ -9,12 +9,13 @@
 import Foundation
 import UIKit
 import CoreGraphics
+import MapKit
 
 class PGQuadTree {
 
     static let capacity = 4
 
-    var annotations = [PGAnnotation]()
+    var annotations = [MKAnnotation]()
     var boundingBox: PGBoundingBox
     var isDivided = false
 
@@ -27,7 +28,7 @@ class PGQuadTree {
         self.boundingBox = boundingBox
     }
     
-    public func insertAnnotation(newAnnotation: PGAnnotation) {
+    public func insertAnnotation(newAnnotation: MKAnnotation) {
 
         guard self.boundingBox.containsCoordinate(coordinate: newAnnotation.coordinate) else {
             return
@@ -45,11 +46,11 @@ class PGQuadTree {
         }
     }
 
-    func queryRegion(searchInBoundingBox: PGBoundingBox, completion: ([PGAnnotation]) -> Void) {
+    func queryRegion(searchInBoundingBox: PGBoundingBox, completion: ([MKAnnotation]) -> Void) {
         guard searchInBoundingBox.intersectsWithBoundingBox(boundingBox: self.boundingBox) else {
             return
         }
-        var totalAnnotations = [PGAnnotation]()
+        var totalAnnotations = [MKAnnotation]()
         for annotation in self.annotations {
 
             if searchInBoundingBox.containsCoordinate(coordinate: annotation.coordinate) {

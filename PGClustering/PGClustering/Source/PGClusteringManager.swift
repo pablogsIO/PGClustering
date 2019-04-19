@@ -11,41 +11,36 @@ import MapKit
 
 protocol PGClusteringManagerDelegate: class {
     
-    func displayAnnotations()
+    func displayAnnotations(annotations: [PGAnnotation])
 }
 
 class PGClusteringManager {
 
-    public var mapView: MKMapView!
+    private var operationQueue = OperationQueue()
+    private var dispatchQueue = DispatchQueue(label: "io.pablogs.concurrent", attributes: DispatchQueue.Attributes.concurrent)
     public weak var delegate: PGClusteringManagerDelegate?
     
     private let quadTree = PGQuadTree(boundingBox: PGBoundingBox.mapRectToBoundingBox(mapRect: MKMapRect.world))
 
     init(annotations: [PGAnnotation]) {
 
-        for annotation in annotations {
-            quadTree.insertAnnotation(newAnnotation: annotation)
+        self.addAnnotations(annotations: annotations)
+    }
+    
+    public func addAnnotations(annotations: [MKAnnotation]) {
+        dispatchQueue.async {
+            for annotation in annotations {
+                self.quadTree.insertAnnotation(newAnnotation: annotation)
+            }
         }
     }
 
-    private func drawPolyline(box: PGBoundingBox) {
-
-        let bottomLeft = CLLocationCoordinate2D(latitude: CLLocationDegrees(box.xSouthWest), longitude: CLLocationDegrees(box.ySouthWest))
-        let topLeft = CLLocationCoordinate2D(latitude: CLLocationDegrees(box.xSouthWest), longitude: CLLocationDegrees(box.yNorthEast))
-        let bottomRight = CLLocationCoordinate2D(latitude: CLLocationDegrees(box.xNorthEast), longitude: CLLocationDegrees(box.ySouthWest))
-        let topRight = CLLocationCoordinate2D(latitude: CLLocationDegrees(box.xNorthEast), longitude: CLLocationDegrees(box.yNorthEast))
-        let coordinates = [bottomLeft,bottomRight, topRight, topLeft, bottomLeft]
-        let polyline = MKPolyline(coordinates: coordinates, count: 5)
-        
-        mapView.addOverlay(polyline)
-
-    }
-    public func clusterAnnotationWithinMapRectangle(visibleMapRect: MKMapRect, zoomScale: Double) -> [PGAnnotation] {
+    public func clusterAnnotationWithinMapRectangle(visibleMapRect: MKMapRect, zoomScale: Double) -> [MKAnnotation] {
 
         guard !zoomScale.isInfinite else {
             return []
         }
-        var clusterAnnotations = [PGAnnotation]()
+        var clusterAnnotations = [MKAnnotation]()
         let cellSizePoints = Double(visibleMapRect.size.width/Double(PGClusteringManager.cellSizeForZoomScale(zoomScale: MKZoomScale(zoomScale))))
         let minX = visibleMapRect.minX
         let maxX = visibleMapRect.maxX

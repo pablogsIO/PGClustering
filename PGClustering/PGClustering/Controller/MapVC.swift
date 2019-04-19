@@ -16,8 +16,8 @@ class MapVC: UIViewController {
     private let latitudeLongitudeDelta = 0.0275
     private let longitude = -0.076132
     private let latitude = 51.508530
-    
-    private var annotations = [PGAnnotation]()
+
+    private let clusterManager = PGClusteringManager(annotations: [PGAnnotation]())
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,11 +30,13 @@ class MapVC: UIViewController {
                                              span: MKCoordinateSpan(latitudeDelta: latitudeLongitudeDelta,
                                                                     longitudeDelta: latitudeLongitudeDelta)),
                           animated: true)
-        
+        var annotations = [MKAnnotation]()
         for _ in 1...1000 {
             let annotation = self.getAnnotation()
-            self.annotations.append((annotation as? PGAnnotation)!)
+            annotations.append(annotation)
         }
+        clusterManager.delegate = self
+        
 
     }
 
@@ -42,8 +44,7 @@ class MapVC: UIViewController {
 
         let boundsWidth = self.mapView.bounds.width
         let visibleWidth = CGFloat(self.mapView.visibleMapRect.width)
-        let clusterManager = PGClusteringManager(annotations: self.annotations)
-        clusterManager.mapView = self.mapView
+        
         let clusterAnnotations = clusterManager.clusterAnnotationWithinMapRectangle(visibleMapRect: mapView.visibleMapRect, zoomScale: Double(boundsWidth/visibleWidth))
         mapView.removeAnnotations(mapView.annotations)
         mapView.addAnnotations(clusterAnnotations)
@@ -62,6 +63,15 @@ class MapVC: UIViewController {
 
 }
 
+extension MapVC: PGClusteringManagerDelegate {
+    func displayAnnotations(annotations: [PGAnnotation]) {
+        
+        DispatchQueue.main.async {
+            self.mapView.removeAnnotations(self.mapView.annotations)
+            self.mapView.addAnnotations(annotations)
+        }
+    }
+}
 extension MapVC: MKMapViewDelegate {
     func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
         let reuseIdentifier = "annotationView"
@@ -83,11 +93,11 @@ extension MapVC: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
 
-        let boundsWidth = self.mapView.bounds.width
-        let visibleWidth = CGFloat(self.mapView.visibleMapRect.width)
-        let clusterManager = PGClusteringManager(annotations: self.annotations)
-        clusterManager.mapView = self.mapView
-        clusterManager.clusterAnnotationWithinMapRectangle(visibleMapRect: mapView.visibleMapRect, zoomScale: Double(boundsWidth/visibleWidth))
+//        let boundsWidth = self.mapView.bounds.width
+//        let visibleWidth = CGFloat(self.mapView.visibleMapRect.width)
+//        let clusterManager = PGClusteringManager(annotations: self.annotations)
+//        clusterManager.mapView = self.mapView
+//        clusterManager.clusterAnnotationWithinMapRectangle(visibleMapRect: mapView.visibleMapRect, zoomScale: Double(boundsWidth/visibleWidth))
 
     }
 
