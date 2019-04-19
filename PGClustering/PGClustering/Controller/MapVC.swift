@@ -36,20 +36,10 @@ class MapVC: UIViewController {
             annotations.append(annotation)
         }
         clusterManager.delegate = self
-        
+        clusterManager.addAnnotations(annotations: annotations)
 
     }
 
-    @IBAction func clustering(_ sender: Any) {
-
-        let boundsWidth = self.mapView.bounds.width
-        let visibleWidth = CGFloat(self.mapView.visibleMapRect.width)
-        
-        let clusterAnnotations = clusterManager.clusterAnnotationWithinMapRectangle(visibleMapRect: mapView.visibleMapRect, zoomScale: Double(boundsWidth/visibleWidth))
-        mapView.removeAnnotations(mapView.annotations)
-        mapView.addAnnotations(clusterAnnotations)
-
-    }
     private func getAnnotation() -> MKAnnotation {
 
         let longitude = Double.random(in: -latitudeLongitudeDelta/2...latitudeLongitudeDelta/2)
@@ -64,8 +54,9 @@ class MapVC: UIViewController {
 }
 
 extension MapVC: PGClusteringManagerDelegate {
-    func displayAnnotations(annotations: [PGAnnotation]) {
-        
+    
+    func displayAnnotations(annotations: [MKAnnotation]) {
+        print("pablogsio: Total annotations: \(annotations.count)")
         DispatchQueue.main.async {
             self.mapView.removeAnnotations(self.mapView.annotations)
             self.mapView.addAnnotations(annotations)
@@ -93,24 +84,12 @@ extension MapVC: MKMapViewDelegate {
     
     func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
 
-//        let boundsWidth = self.mapView.bounds.width
-//        let visibleWidth = CGFloat(self.mapView.visibleMapRect.width)
-//        let clusterManager = PGClusteringManager(annotations: self.annotations)
-//        clusterManager.mapView = self.mapView
-//        clusterManager.clusterAnnotationWithinMapRectangle(visibleMapRect: mapView.visibleMapRect, zoomScale: Double(boundsWidth/visibleWidth))
+        let boundsWidth = self.mapView.bounds.width
+        let visibleWidth = CGFloat(self.mapView.visibleMapRect.width)
 
+        clusterManager.clusterAnnotationWithinMapRectangle(visibleMapRect: mapView.visibleMapRect, zoomScale: Double(boundsWidth/visibleWidth))
     }
 
-    func mapView(_ mapView: MKMapView!, rendererFor overlay: MKOverlay!) -> MKOverlayRenderer! {
-        if overlay is MKPolyline {
-            let polylineRenderer = MKPolylineRenderer(overlay: overlay)
-            polylineRenderer.strokeColor = UIColor.blue
-            polylineRenderer.lineWidth = 2
-            return polylineRenderer
-        }
-    
-        return nil
-    }
     func zoomScaleToZoomLevel(scale: MKZoomScale) -> Int {
         
         let totalTilesAtMaxZoom = MKMapSize.world.width / 256.0

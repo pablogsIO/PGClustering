@@ -11,7 +11,7 @@ import MapKit
 
 protocol PGClusteringManagerDelegate: class {
     
-    func displayAnnotations(annotations: [PGAnnotation])
+    func displayAnnotations(annotations: [MKAnnotation])
 }
 
 class PGClusteringManager {
@@ -43,10 +43,10 @@ class PGClusteringManager {
         }
     }
 
-    public func clusterAnnotationWithinMapRectangle(visibleMapRect: MKMapRect, zoomScale: Double) -> [MKAnnotation] {
+    public func clusterAnnotationWithinMapRectangle(visibleMapRect: MKMapRect, zoomScale: Double) {
 
         guard !zoomScale.isInfinite else {
-            return []
+            return
         }
         var clusterAnnotations = [MKAnnotation]()
         let cellSizePoints = Double(visibleMapRect.size.width/Double(PGClusteringManager.cellSizeForZoomScale(zoomScale: MKZoomScale(zoomScale))))
@@ -54,41 +54,43 @@ class PGClusteringManager {
         let maxX = visibleMapRect.maxX
         let minY = visibleMapRect.minY
         let maxY = visibleMapRect.maxY
-        
-        var iterator = 1
-        var iteratorSecond = 1
-        var iCoordinate = minY
-        while iCoordinate<maxY {
-            var jCoordinate = minX
-            iterator = 1
-            while jCoordinate<maxX {
-                let area = PGBoundingBox.mapRectToBoundingBox(mapRect: MKMapRect(x: jCoordinate, y: iCoordinate, width: cellSizePoints, height: cellSizePoints))
-                //drawPolyline(box: area)
-                self.quadTree.queryRegion(searchInBoundingBox: area) { (annotations) in
-                    
-                    if annotations.count>1 {
-                        print("\(annotations.count) in (\(iterator),\(iteratorSecond))")
-                        var totalX = 0.0
-                        var totalY = 0.0
+
+        operationQueue.addOperation {
+            var iterator = 1
+            var iteratorSecond = 1
+            var iCoordinate = minY
+            while iCoordinate<maxY {
+                var jCoordinate = minX
+                iterator = 1
+                while jCoordinate<maxX {
+                    let area = PGBoundingBox.mapRectToBoundingBox(mapRect: MKMapRect(x: jCoordinate, y: iCoordinate, width: cellSizePoints, height: cellSizePoints))
+                    //drawPolyline(box: area)
+                    self.quadTree.queryRegion(searchInBoundingBox: area) { (annotations) in
                         
-                        for annotation in annotations {
-                            totalX += annotation.coordinate.latitude
-                            totalY += annotation.coordinate.longitude
+                        if annotations.count>1 {
+                            print("\(annotations.count) in (\(iterator),\(iteratorSecond))")
+                            var totalX = 0.0
+                            var totalY = 0.0
+                            
+                            for annotation in annotations {
+                                totalX += annotation.coordinate.latitude
+                                totalY += annotation.coordinate.longitude
+                            }
+                            let totalAnnotations = annotations.count
+                            
+                            clusterAnnotations.append(PGAnnotation(coordinate: CLLocationCoordinate2D(latitude: totalX/Double(totalAnnotations), longitude: totalY/Double(totalAnnotations)), title: "\(annotations.count)", subtitle: "Clustered"))
+                        } else if annotations.count == 1 {
+                            clusterAnnotations.append(annotations.first!)
                         }
-                        let totalAnnotations = annotations.count
-                        
-                        clusterAnnotations.append(PGAnnotation(coordinate: CLLocationCoordinate2D(latitude: totalX/Double(totalAnnotations), longitude: totalY/Double(totalAnnotations)), title: "\(annotations.count)", subtitle: "Clustered"))
-                    } else if annotations.count == 1 {
-                        clusterAnnotations.append(annotations.first!)
                     }
+                    jCoordinate+=cellSizePoints
+                    iterator+=1
                 }
-                jCoordinate+=cellSizePoints
-                iterator+=1
+                iteratorSecond+=1
+                iCoordinate+=cellSizePoints
             }
-            iteratorSecond+=1
-            iCoordinate+=cellSizePoints
+            self.delegate?.displayAnnotations(annotations: clusterAnnotations)
         }
-        return clusterAnnotations
     }
  
 }
