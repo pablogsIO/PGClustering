@@ -91,9 +91,9 @@
 		6E046FD621F3D4000057A8BB /* PGClustering */ = {
 			isa = PBXGroup;
 			children = (
+				6E046FD721F3D4000057A8BB /* AppDelegate.swift */,
 				6E3C3C222230305B00C635D1 /* Controller */,
 				6E046FE921F3D40A0057A8BB /* Source */,
-				6E046FD721F3D4000057A8BB /* AppDelegate.swift */,
 				6E046FDB21F3D4000057A8BB /* Main.storyboard */,
 				6E046FDE21F3D4020057A8BB /* Assets.xcassets */,
 				6E046FE021F3D4020057A8BB /* LaunchScreen.storyboard */,
