@@ -10,30 +10,35 @@ import Foundation
 import UIKit
 import CoreGraphics
 
-class QuadTree {
+class PGQuadTree {
 
     static let capacity = 4
+
+    var annotations = [PGAnnotation]()
 
     var points = [CGPoint]()
     var boundingBox = CGRect()
     var isDivided = false
     var color = UIColor.random
 
-    private var northWest: QuadTree?
-    private var northEast: QuadTree?
-    private var southWest: QuadTree?
-    private var southEast: QuadTree?
+    private var northWest: PGQuadTree?
+    private var northEast: PGQuadTree?
+    private var southWest: PGQuadTree?
+    private var southEast: PGQuadTree?
 
     init(boundingBox: CGRect) {
         self.boundingBox = boundingBox
     }
 
+    public func insertAnnotation(newAnnotation: PGAnnotation) {
+        
+    }
     public func insertPoint(newPoint: CGPoint) {
 
         guard self.boundingBox.contains(newPoint) else {
             return
         }
-        if points.count < QuadTree.capacity && northWest == nil {
+        if points.count < PGQuadTree.capacity && northWest == nil {
             points.append(newPoint)
         } else {
             if northWest == nil {
@@ -51,7 +56,7 @@ class QuadTree {
         guard self.boundingBox.contains(newPoint) else {
             return
         }
-        if points.count < QuadTree.capacity && northWest == nil {
+        if points.count < PGQuadTree.capacity && northWest == nil {
             points.append(newPoint)
             if points.count == 1 {
                 //drawRectangle(rectangle: boundingBox, view: view)
@@ -100,7 +105,7 @@ class QuadTree {
         completion(totalPoints)
     }
 
-    func getSubQuadTrees() -> [QuadTree] {
+    func getSubQuadTrees() -> [PGQuadTree] {
         if isDivided {
             return [northWest!, northEast!, southWest!, southEast!]
         } else {
@@ -109,7 +114,7 @@ class QuadTree {
     }
 }
 
-extension QuadTree {
+extension PGQuadTree {
 
     private func subdivide() {
         self.isDivided = true
@@ -118,16 +123,16 @@ extension QuadTree {
         let height = self.boundingBox.height/2
         let size = CGSize(width: width-offset, height: height-offset)
 
-        self.northWest = QuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+offset/2,
+        self.northWest = PGQuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+offset/2,
                                                                       y: self.boundingBox.origin.y+offset/2),
                                                       size: size))
-        self.northEast = QuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+width+offset/2,
+        self.northEast = PGQuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+width+offset/2,
                                                                       y: self.boundingBox.origin.y+offset/2),
                                                       size: size))
-        self.southWest = QuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+offset/2,
+        self.southWest = PGQuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+offset/2,
                                                                       y: self.boundingBox.origin.y+height+offset/2),
                                                       size: size))
-        self.southEast = QuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+width+offset/2,
+        self.southEast = PGQuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+width+offset/2,
                                                                       y: self.boundingBox.origin.y+height+offset/2),
                                                       size: size))
     }
@@ -139,16 +144,16 @@ extension QuadTree {
         let height = self.boundingBox.height/2
         let size = CGSize(width: width-offset, height: height-offset)
 
-        self.northWest = QuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+offset/2,
+        self.northWest = PGQuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+offset/2,
                                                                       y: self.boundingBox.origin.y+offset/2),
                                                       size: size))
-        self.northEast = QuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+width+offset/2,
+        self.northEast = PGQuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+width+offset/2,
                                                                       y: self.boundingBox.origin.y+offset/2),
                                                       size: size))
-        self.southWest = QuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+offset/2,
+        self.southWest = PGQuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+offset/2,
                                                                       y: self.boundingBox.origin.y+height+offset/2),
                                                       size: size))
-        self.southEast = QuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+width+offset/2,
+        self.southEast = PGQuadTree(boundingBox: CGRect(origin: CGPoint(x: self.boundingBox.origin.x+width+offset/2,
                                                                       y: self.boundingBox.origin.y+height+offset/2),
                                                       size: size))
     }
