@@ -29,13 +29,14 @@ class PGClusteringManager {
     }
     
     public func addAnnotation(annotation: MKAnnotation) {
-        
+        operationQueue.cancelAllOperations()
         dispatchQueue.async {
             self.quadTree.insertAnnotation(newAnnotation: annotation)
         }
     }
 
     public func addAnnotations(annotations: [MKAnnotation]) {
+        operationQueue.cancelAllOperations()
         dispatchQueue.async {
             for annotation in annotations {
                 self.quadTree.insertAnnotation(newAnnotation: annotation)
@@ -55,6 +56,7 @@ class PGClusteringManager {
         let minY = visibleMapRect.minY
         let maxY = visibleMapRect.maxY
 
+        operationQueue.cancelAllOperations()
         operationQueue.addOperation {
 
             var iCoordinate = minY
