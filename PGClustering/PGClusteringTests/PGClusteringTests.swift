@@ -18,11 +18,11 @@ class PGClusteringTests: XCTestCase {
     override func tearDown() {
 
     }
-
+/*
     func testBoundaryBox() {
         let totalPoints = 10
         let iPhone7Size =  CGRect(x: 0, y: 0, width: 414, height: 736)
-        let tree = QuadTree(boundingBox: iPhone7Size)
+        let tree = PGQuadTree(boundingBox: iPhone7Size)
 
         var index = 1
 
@@ -50,5 +50,5 @@ class PGClusteringTests: XCTestCase {
 
         }
     }
-
+*/
 }

@@ -7,65 +7,116 @@
 //
 
 import UIKit
+import MapKit
 
-struct ClusterPoint {
-    let origin: CGPoint
-    let points: Int
-    let rectangle: CGRect
+protocol PGClusteringManagerDelegate: class {
+    
+    func displayAnnotations()
 }
 
 class PGClusteringManager {
 
-    private let quadtree: QuadTree
-    private let boxWidth = CGFloat(5.0)
-    private let boxHeight = CGFloat(10.0)
+    public var mapView: MKMapView!
+    public weak var delegate: PGClusteringManagerDelegate?
+    
+    private let quadTree = PGQuadTree(boundingBox: PGBoundingBox.mapRectToBoundingBox(mapRect: MKMapRect.world))
 
-    init(quadtree: QuadTree) {
-        self.quadtree = quadtree
+    init(annotations: [PGAnnotation]) {
+
+        for annotation in annotations {
+            quadTree.insertAnnotation(newAnnotation: annotation)
+        }
     }
 
-    public func clusterAnnotationsWithinRectangle(rectangle: CGRect) -> [ClusterPoint] {
+    private func drawPolyline(box: PGBoundingBox) {
 
-        var clusters = [ClusterPoint]()
+        let bottomLeft = CLLocationCoordinate2D(latitude: CLLocationDegrees(box.xSouthWest), longitude: CLLocationDegrees(box.ySouthWest))
+        let topLeft = CLLocationCoordinate2D(latitude: CLLocationDegrees(box.xSouthWest), longitude: CLLocationDegrees(box.yNorthEast))
+        let bottomRight = CLLocationCoordinate2D(latitude: CLLocationDegrees(box.xNorthEast), longitude: CLLocationDegrees(box.ySouthWest))
+        let topRight = CLLocationCoordinate2D(latitude: CLLocationDegrees(box.xNorthEast), longitude: CLLocationDegrees(box.yNorthEast))
+        let coordinates = [bottomLeft,bottomRight, topRight, topLeft, bottomLeft]
+        let polyline = MKPolyline(coordinates: coordinates, count: 5)
+        
+        mapView.addOverlay(polyline)
 
-        let boxArea = calculateBoxAreaSize(size: rectangle.size)
-        var xCoordinate = rectangle.origin.x
-        var yCoordinate = rectangle.origin.y
+    }
+    public func clusterAnnotationWithinMapRectangle(visibleMapRect: MKMapRect, zoomScale: Double) -> [PGAnnotation] {
 
-        while yCoordinate<rectangle.size.height {
-            xCoordinate = rectangle.origin.x
-            while xCoordinate<rectangle.size.width {
-                let boundingBox = CGRect(x: xCoordinate, y: yCoordinate, width: boxArea.width, height: boxArea.height)
-                quadtree.queryRegion(rectangle: boundingBox) { (points) in
-                    if points.count != 0 {
-                        var totalX = CGFloat(0)
-                        var totalY = CGFloat(0)
-
-                        for point in points {
-                            totalX += point.x
-                            totalY += point.y
+        guard !zoomScale.isInfinite else {
+            return []
+        }
+        var clusterAnnotations = [PGAnnotation]()
+        let cellSizePoints = Double(visibleMapRect.size.width/Double(PGClusteringManager.cellSizeForZoomScale(zoomScale: MKZoomScale(zoomScale))))
+        let minX = visibleMapRect.minX
+        let maxX = visibleMapRect.maxX
+        let minY = visibleMapRect.minY
+        let maxY = visibleMapRect.maxY
+        
+        var iterator = 1
+        var iteratorSecond = 1
+        var iCoordinate = minY
+        while iCoordinate<maxY {
+            var jCoordinate = minX
+            iterator = 1
+            while jCoordinate<maxX {
+                let area = PGBoundingBox.mapRectToBoundingBox(mapRect: MKMapRect(x: jCoordinate, y: iCoordinate, width: cellSizePoints, height: cellSizePoints))
+                //drawPolyline(box: area)
+                self.quadTree.queryRegion(searchInBoundingBox: area) { (annotations) in
+                    
+                    if annotations.count>1 {
+                        print("\(annotations.count) in (\(iterator),\(iteratorSecond))")
+                        var totalX = 0.0
+                        var totalY = 0.0
+                        
+                        for annotation in annotations {
+                            totalX += annotation.coordinate.latitude
+                            totalY += annotation.coordinate.longitude
                         }
-                        let totalPoints = CGFloat(points.count)
-                        clusters.append(ClusterPoint(origin: CGPoint(x: totalX/totalPoints,
-                                                                     y: totalY/totalPoints),
-                                                     points: points.count, rectangle: boundingBox))
+                        let totalAnnotations = annotations.count
+                        
+                        clusterAnnotations.append(PGAnnotation(coordinate: CLLocationCoordinate2D(latitude: totalX/Double(totalAnnotations), longitude: totalY/Double(totalAnnotations)), title: "\(annotations.count)", subtitle: "Clustered"))
+                    } else if annotations.count == 1 {
+                        clusterAnnotations.append(annotations.first!)
                     }
                 }
-                xCoordinate += boxArea.width
+                jCoordinate+=cellSizePoints
+                iterator+=1
             }
-            yCoordinate += boxArea.height
+            iteratorSecond+=1
+            iCoordinate+=cellSizePoints
         }
+        return clusterAnnotations
+    }
+ 
+}
 
-        return clusters
+extension PGClusteringManager {
+
+    class func zoomScaleToZoomLevel(scale: MKZoomScale) -> Int {
+
+        let totalTilesAtMaxZoom = MKMapSize.world.width / 256.0
+        let zoomLevelAtMaxZoom = CGFloat(log2(totalTilesAtMaxZoom))
+        
+        return Int(max(0,zoomLevelAtMaxZoom+CGFloat(floor(log2f(Float(scale))+0.5))))
+
     }
 
-    private func calculateBoxAreaSize(size: CGSize) -> CGSize {
-
-        let width = size.width/boxWidth
-        let height = size.height/boxHeight
-
-        return CGSize(width: width, height: height)
-
+    class func cellSizeForZoomScale(zoomScale: MKZoomScale) -> Int {
+        
+        let zoomLevel = zoomScaleToZoomLevel(scale: zoomScale)
+        
+        switch zoomLevel {
+        case 0...4:
+            return 4
+        case 5...8:
+            return 8
+        case 9...16:
+            return 16
+        case 17...20:
+            return 4
+        default:
+            return 10
+        }
     }
 
 }

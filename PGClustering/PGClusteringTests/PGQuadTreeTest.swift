@@ -7,26 +7,51 @@
 //
 
 import XCTest
+import MapKit
+
+@testable import PGClustering
 
 class PGQuadTreeTest: XCTestCase {
 
     override func setUp() {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+
     }
 
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+
     }
 
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func testQuadTree() {
+
+        let boundingBox = PGBoundingBox(xSouthWest: CGFloat(0),
+                                        ySouthWest: CGFloat(0),
+                                        xNorthEast: CGFloat(100),
+                                        yNorthEast: CGFloat(100))
+        let quadTree = PGQuadTree(boundingBox: boundingBox)
+        XCTAssertNotNil(quadTree)
+
+    }
+
+    func testQuadTreeDivide() {
+        let longitude = -0.076132
+        let latitude = 51.508530
+
+        let quadTree = PGQuadTree(boundingBox: PGBoundingBox.mapRectToBoundingBox(mapRect: MKMapRect.world))
+        XCTAssertNotNil(quadTree)
+        let location = CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+        let annotation = PGAnnotation(coordinate: location, title: "Test tilte", subtitle: "Test subtitle")
+        quadTree.insertAnnotation(newAnnotation: annotation)
+        quadTree.insertAnnotation(newAnnotation: annotation)
+        quadTree.insertAnnotation(newAnnotation: annotation)
+        quadTree.insertAnnotation(newAnnotation: annotation)
+        quadTree.insertAnnotation(newAnnotation: annotation)
+        assert(quadTree.isDivided)
     }
 
     func testPerformanceExample() {
-        // This is an example of a performance test case.
+
         self.measure {
-            // Put the code you want to measure the time of here.
+
         }
     }
 

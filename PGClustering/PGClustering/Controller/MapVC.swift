@@ -16,7 +16,9 @@ class MapVC: UIViewController {
     private let latitudeLongitudeDelta = 0.0275
     private let longitude = -0.076132
     private let latitude = 51.508530
-
+    
+    private var annotations = [PGAnnotation]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configureMap()
@@ -28,21 +30,31 @@ class MapVC: UIViewController {
                                              span: MKCoordinateSpan(latitudeDelta: latitudeLongitudeDelta,
                                                                     longitudeDelta: latitudeLongitudeDelta)),
                           animated: true)
-        var annotations = [ClusteringAnnotation]()
-        for _ in 1...100 {
+        
+        for _ in 1...1000 {
             let annotation = self.getAnnotation()
-            annotations.append((annotation as? ClusteringAnnotation)!)
+            self.annotations.append((annotation as? PGAnnotation)!)
         }
-        mapView.addAnnotations(annotations)
 
     }
 
+    @IBAction func clustering(_ sender: Any) {
+
+        let boundsWidth = self.mapView.bounds.width
+        let visibleWidth = CGFloat(self.mapView.visibleMapRect.width)
+        let clusterManager = PGClusteringManager(annotations: self.annotations)
+        clusterManager.mapView = self.mapView
+        let clusterAnnotations = clusterManager.clusterAnnotationWithinMapRectangle(visibleMapRect: mapView.visibleMapRect, zoomScale: Double(boundsWidth/visibleWidth))
+        mapView.removeAnnotations(mapView.annotations)
+        mapView.addAnnotations(clusterAnnotations)
+
+    }
     private func getAnnotation() -> MKAnnotation {
 
         let longitude = Double.random(in: -latitudeLongitudeDelta/2...latitudeLongitudeDelta/2)
         let latitude = Double.random(in: -latitudeLongitudeDelta/2...latitudeLongitudeDelta/2)
 
-        return ClusteringAnnotation(coordinate: CLLocationCoordinate2D(latitude: self.latitude+latitude, longitude: self.longitude+longitude),
+        return PGAnnotation(coordinate: CLLocationCoordinate2D(latitude: self.latitude+latitude, longitude: self.longitude+longitude),
                                     title: "",
                                     subtitle: "")
 
@@ -68,18 +80,39 @@ extension MapVC: MKMapViewDelegate {
         view?.canShowCallout = true
         return view
     }
+    
+    func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
 
-}
+        let boundsWidth = self.mapView.bounds.width
+        let visibleWidth = CGFloat(self.mapView.visibleMapRect.width)
+        let clusterManager = PGClusteringManager(annotations: self.annotations)
+        clusterManager.mapView = self.mapView
+        clusterManager.clusterAnnotationWithinMapRectangle(visibleMapRect: mapView.visibleMapRect, zoomScale: Double(boundsWidth/visibleWidth))
 
-class ClusteringAnnotation: NSObject, MKAnnotation {
+    }
 
-    public var coordinate: CLLocationCoordinate2D
-    public var title: String?
-    public var subtitle: String?
-
-    init(coordinate: CLLocationCoordinate2D, title: String, subtitle: String) {
-        self.coordinate = coordinate
-        self.title = title
-        self.subtitle = subtitle
+    func mapView(_ mapView: MKMapView!, rendererFor overlay: MKOverlay!) -> MKOverlayRenderer! {
+        if overlay is MKPolyline {
+            let polylineRenderer = MKPolylineRenderer(overlay: overlay)
+            polylineRenderer.strokeColor = UIColor.blue
+            polylineRenderer.lineWidth = 2
+            return polylineRenderer
+        }
+    
+        return nil
+    }
+    func zoomScaleToZoomLevel(scale: MKZoomScale) -> Int {
+        
+        let totalTilesAtMaxZoom = MKMapSize.world.width / 256.0
+        
+        let zoomLevelAtMaxZoom = Int(log2(totalTilesAtMaxZoom))
+        let floorLog2ScaleFloat = floor(log2f(Float(scale))) + 0.5
+        guard !floorLog2ScaleFloat.isInfinite else {
+            return floorLog2ScaleFloat.sign.rawValue < 0 ? 0 : 19
+        }
+        
+        let sum = zoomLevelAtMaxZoom + Int(floorLog2ScaleFloat)
+        let zoomLevel = max(0, sum)
+        return zoomLevel
     }
 }
