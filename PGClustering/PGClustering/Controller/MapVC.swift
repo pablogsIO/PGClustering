@@ -22,6 +22,7 @@ class MapVC: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureMap()
+        
     }
 
     private func configureMap() {

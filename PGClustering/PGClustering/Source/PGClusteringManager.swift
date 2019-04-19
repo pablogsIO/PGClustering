@@ -110,11 +110,11 @@ extension PGClusteringManager {
         
         switch zoomLevel {
         case 0...4:
-            return 4
+            return 32
         case 5...8:
-            return 8
-        case 9...16:
             return 16
+        case 9...16:
+            return 8
         case 17...20:
             return 4
         default:
