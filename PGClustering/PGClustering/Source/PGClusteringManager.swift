@@ -18,15 +18,23 @@ class PGClusteringManager {
 
     private var operationQueue = OperationQueue()
     private var dispatchQueue = DispatchQueue(label: "io.pablogs.concurrent", attributes: DispatchQueue.Attributes.concurrent)
+
     public weak var delegate: PGClusteringManagerDelegate?
     
     private let quadTree = PGQuadTree(boundingBox: PGBoundingBox.mapRectToBoundingBox(mapRect: MKMapRect.world))
 
-    init(annotations: [PGAnnotation]) {
+    init(annotations: [MKAnnotation]) {
 
         self.addAnnotations(annotations: annotations)
     }
     
+    public func addAnnotation(annotation: MKAnnotation) {
+        
+        dispatchQueue.async {
+            self.quadTree.insertAnnotation(newAnnotation: annotation)
+        }
+    }
+
     public func addAnnotations(annotations: [MKAnnotation]) {
         dispatchQueue.async {
             for annotation in annotations {
