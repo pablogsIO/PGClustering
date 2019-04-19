@@ -56,19 +56,17 @@ class PGClusteringManager {
         let maxY = visibleMapRect.maxY
 
         operationQueue.addOperation {
-            var iterator = 1
-            var iteratorSecond = 1
+
             var iCoordinate = minY
+
             while iCoordinate<maxY {
                 var jCoordinate = minX
-                iterator = 1
+
                 while jCoordinate<maxX {
                     let area = PGBoundingBox.mapRectToBoundingBox(mapRect: MKMapRect(x: jCoordinate, y: iCoordinate, width: cellSizePoints, height: cellSizePoints))
-                    //drawPolyline(box: area)
                     self.quadTree.queryRegion(searchInBoundingBox: area) { (annotations) in
                         
                         if annotations.count>1 {
-                            print("\(annotations.count) in (\(iterator),\(iteratorSecond))")
                             var totalX = 0.0
                             var totalY = 0.0
                             
@@ -84,9 +82,7 @@ class PGClusteringManager {
                         }
                     }
                     jCoordinate+=cellSizePoints
-                    iterator+=1
                 }
-                iteratorSecond+=1
                 iCoordinate+=cellSizePoints
             }
             self.delegate?.displayAnnotations(annotations: clusterAnnotations)
