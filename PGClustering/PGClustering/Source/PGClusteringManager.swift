@@ -59,13 +59,13 @@ class PGClusteringManager {
         operationQueue.cancelAllOperations()
         operationQueue.addOperation {
 
-            var iCoordinate = minY
+            var yCoordinate = minY
 
-            while iCoordinate<maxY {
-                var jCoordinate = minX
+            while yCoordinate<maxY {
+                var xCoordinate = minX
 
-                while jCoordinate<maxX {
-                    let area = PGBoundingBox.mapRectToBoundingBox(mapRect: MKMapRect(x: jCoordinate, y: iCoordinate, width: cellSizePoints, height: cellSizePoints))
+                while xCoordinate<maxX {
+                    let area = PGBoundingBox.mapRectToBoundingBox(mapRect: MKMapRect(x: xCoordinate, y: yCoordinate, width: cellSizePoints, height: cellSizePoints))
                     self.quadTree.queryRegion(searchInBoundingBox: area) { (annotations) in
                         
                         if annotations.count>1 {
@@ -83,9 +83,9 @@ class PGClusteringManager {
                             clusterAnnotations.append(annotations.first!)
                         }
                     }
-                    jCoordinate+=cellSizePoints
+                    xCoordinate+=cellSizePoints
                 }
-                iCoordinate+=cellSizePoints
+                yCoordinate+=cellSizePoints
             }
             self.delegate?.displayAnnotations(annotations: clusterAnnotations)
         }
